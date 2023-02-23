@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "scripts": {
     "setup": "npm install",
+    "build": "tsc",
     "start": "ts-node src/index.ts",
     "dev": "ts-node-dev src/index.ts"
   },
