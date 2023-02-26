@@ -53,6 +53,8 @@ const main = async () => {
     `Starting snapshot listener for collection ${collectionPath} in project ${projectId}`
   );
 
+  SoundPlayer.playStartupSound();
+
   alarmsFirestore.onSnapshot(async (snapshot) => {
     // Do not react on the initial snapshot event. This contains old alarms
     if (initialSnapshot) {
