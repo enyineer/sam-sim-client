@@ -1,7 +1,5 @@
 # Service Account setup
 
-Currently only works with RPI 2/3
-
 1. Go to Google Cloud Console
 2. Open IAM & Admin
 3. Open Service Accounts
