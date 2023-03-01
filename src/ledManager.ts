@@ -13,14 +13,14 @@ export class LEDManager {
   private currentTimeout: ReturnType<typeof setInterval> | null;
 
   constructor() {
-    const ledPins = process.env.LED_PINS;
-    const ledDuration = process.env.LED_DURATION;
+    const ledPinsConf = process.env.LED_PINS;
+    const ledDurationConf = process.env.LED_DURATION;
 
-    if (ledPins === undefined) {
+    if (ledPinsConf === undefined) {
       this.ledPins = [];
       console.warn('LED_PINS was not set in .env - LEDs won\'t flash on new alerts.');
     } else {
-      this.ledPins = ledPins.split(',').map(el => {
+      this.ledPins = ledPinsConf.split(',').map(el => {
         const parsedEl = parseInt(el);
 
         if (Number.isNaN(parsedEl)) {
@@ -31,12 +31,12 @@ export class LEDManager {
       });
     }
 
-    if (ledDuration === undefined) {
+    if (ledDurationConf === undefined) {
       const DEFAULT_LED_DURATION = 30;
       console.info(`LED_DURATION was not set in .env - Setting to default duration of ${DEFAULT_LED_DURATION} seconds.`);
       this.ledDuration = DEFAULT_LED_DURATION;
     } else {
-      const parsedEl = parseInt(ledDuration);
+      const parsedEl = parseInt(ledDurationConf);
 
       if (Number.isNaN(parsedEl)) {
         throw new Error(`LED_DURATION is non numeric ${ledDuration}`);
