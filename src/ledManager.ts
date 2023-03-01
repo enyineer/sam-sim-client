@@ -18,7 +18,7 @@ export class LEDManager {
 
     if (ledPins === undefined) {
       this.ledPins = [];
-      console.info('LED_PINS was not set in .env - LEDs won\'t flash on new alerts.');
+      console.warn('LED_PINS was not set in .env - LEDs won\'t flash on new alerts.');
     } else {
       this.ledPins = ledPins.split(',').map(el => {
         const parsedEl = parseInt(el);
@@ -26,7 +26,7 @@ export class LEDManager {
         if (Number.isNaN(parsedEl)) {
           throw new Error(`LED_PINS contains non numeric element ${el}.`);
         }
-
+        console.info(`Configuring output to GPIO ${parsedEl}`);
         return new Gpio(parsedEl, 'out');
       });
     }
