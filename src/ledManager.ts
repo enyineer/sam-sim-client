@@ -49,8 +49,15 @@ export class LEDManager {
 
     this.reset();
 
-    process.once('SIGTERM', () => this.reset());
-    process.once('SIGINT', () => this.reset());
+    process.once('SIGTERM', () => this.turnOff());
+    process.once('SIGINT', () => this.turnOff());
+  }
+
+  async turnOff() {
+    await this.reset();
+    for (const led of this.ledPins) {
+      led.unexport();
+    }
   }
 
   async startFlashing() {
@@ -73,7 +80,7 @@ export class LEDManager {
   private async setLeds(state: LEDState) {
     console.debug(`Setting LEDs states to: ${state === LEDState.ON ? chalk.green('ON') : chalk.red('OFF')}`)
     for (const led of this.ledPins) {
-      await led.write(LEDState.ON ? 1 : 0);
+      led.writeSync(LEDState.ON ? 1 : 0);
     }
   }
 }
