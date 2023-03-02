@@ -40,9 +40,10 @@ export class SoundPlayer {
     try {
       await this.play(gongPath);
     } catch (err) {
-      Logger.l.error(`Could not play gong ${gongPath}: ${err}`);
+      if (err instanceof Error) {
+        Logger.l.error(`Could not play gong ${gongPath}: ${err.message}`);
+      }
     }
-    
   }
 
   private static getGongPath(alarmType: AlarmType) {
@@ -86,7 +87,9 @@ export class SoundPlayer {
     try {
       await this.play(localPath);
     } catch (err) {
-      Logger.l.error(`Could not play tts file ${localPath}: ${err}`);
+      if (err instanceof Error) {
+        Logger.l.error(`Could not play tts file ${localPath}: ${err.message}`);
+      }
     }
   }
 
@@ -96,7 +99,9 @@ export class SoundPlayer {
     try {
       await this.play(startupPath);
     } catch (err) {
-      Logger.l.error(`Could not play startup sound ${startupPath}: ${err}`);
+      if (err instanceof Error) {
+        Logger.l.error(`Could not play startup sound ${startupPath}: ${err.message}`);
+      }
     }
   }
 
