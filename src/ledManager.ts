@@ -1,4 +1,4 @@
-import { Gpio } from "pigpio";
+import { Gpio } from "onoff";
 import chalk from "chalk";
 import { Logger } from './logger';
 
@@ -29,17 +29,9 @@ export class LEDManager {
           throw new Error(`LED_PINS contains non numeric element ${el}`);
         }
 
-        if (parsedEl < Gpio.MIN_GPIO || parsedEl > Gpio.MAX_USER_GPIO) {
-          throw new Error(`GPIO ${parsedEl} is not usable. Possible range: ${Gpio.MIN_GPIO} <= GPIO <= ${Gpio.MAX_USER_GPIO}`);
-        }
-
         Logger.l.info(`Adding GPIO ${parsedEl} as output`);
         
-        const pin = new Gpio(parsedEl, { mode: Gpio.OUTPUT, alert: true });
-
-        pin.on('alert', (value) => {
-          Logger.l.debug(`Received new state for GPIO ${parsedEl}: ${this.getTextForBinary(value)}`);
-        });
+        const pin = new Gpio(parsedEl, 'low');
 
         return {
           num: parsedEl,
@@ -62,8 +54,6 @@ export class LEDManager {
     }
 
     this.currentTimeout = null;
-
-    this.setLeds(LEDState.OFF);
 
     process.once('SIGTERM', () => this.reset());
     process.once('SIGINT', () => this.reset());
@@ -91,7 +81,7 @@ export class LEDManager {
     for (const led of this.ledPins) {
       try {
         Logger.l.debug(`Setting new state for GPIO ${led.num}: ${this.getTextForBinary(state)}`);
-        led.pin.digitalWrite(LEDState.ON ? 1 : 0);
+        led.pin.writeSync(LEDState.ON ? 1 : 0);
       } catch (err) {
         Logger.l.error(`Failed setting GPIO ${led.num} to ${this.getTextForBinary(state)}: ${err}`);
       }
