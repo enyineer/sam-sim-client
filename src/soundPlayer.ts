@@ -105,7 +105,7 @@ export class SoundPlayer {
     if (process.platform === "win32") {
       vlcExec = "vlc.exe";
     } else {
-      vlcExec = "vlc";
+      vlcExec = "vlc-wrapper";
     }
 
     const vlcPath = await which(vlcExec, { nothrow: true });
