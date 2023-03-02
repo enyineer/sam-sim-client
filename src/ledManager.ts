@@ -30,13 +30,15 @@ export class LEDManager {
         }
         Logger.l.info(`Configuring output to GPIO ${parsedEl}`);
         
-        if (!Gpio.accessible(parsedEl)) {
+        const pin = new Gpio(parsedEl, 'out');
+
+        if (!pin.accessible) {
           throw new Error(`GPIO ${parsedEl} is not accessible`);
         }
 
         return {
           num: parsedEl,
-          pin: new Gpio(parsedEl, 'out'),
+          pin,
         };
       });
     }
