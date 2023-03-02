@@ -29,6 +29,10 @@ export class LEDManager {
           throw new Error(`LED_PINS contains non numeric element ${el}`);
         }
 
+        if (parsedEl < Gpio.MIN_GPIO || parsedEl > Gpio.MAX_USER_GPIO) {
+          throw new Error(`GPIO ${parsedEl} is not usable. Possible range: ${Gpio.MIN_GPIO} <= GPIO <= ${Gpio.MAX_USER_GPIO}`);
+        }
+
         Logger.l.info(`Adding GPIO ${parsedEl} as output`);
         
         const pin = new Gpio(parsedEl, { mode: Gpio.OUTPUT, alert: true });
