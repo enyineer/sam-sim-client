@@ -19,8 +19,10 @@ if (Number.isNaN(majorVersion)) {
   throw new Error(`Detected major version of NodeJS is NaN`);
 }
 
-if (majorVersion < 10 || majorVersion > 16) {
-  throw new Error(`NodeJS v${majorVersion} is not supported. Must be >= 10 and <= 16!`);
+const supportedVersions = [10, 12, 14, 15, 16];
+
+if (!supportedVersions.includes(majorVersion)) {
+  throw new Error(`NodeJS v${majorVersion} is not supported. Must be one of: ${supportedVersions.join(', ')}`);
 }
 
 dotenv.config();
