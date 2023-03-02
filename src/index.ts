@@ -91,11 +91,11 @@ const main = async () => {
       // If the change is for a modified doc, check if it was added to the newDocumentsList
       // This prevents old alarms from being player again if they're getting updated
       if (change.type === "modified" && data.bucketPath) {
+        const localPath = await SoundPlayer.downloadTtsFile(data.bucketPath, alarmsStorage);
         ledManager.startFlashing();
         await SoundPlayer.playAlarm(
           data.type,
-          data.bucketPath,
-          alarmsStorage
+          localPath,
         );
       }
 
