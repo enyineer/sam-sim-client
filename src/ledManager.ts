@@ -7,7 +7,7 @@ enum LEDState {
 }
 
 export class LEDManager {
-  private readonly ledPins: Gpio[];
+  private readonly ledPins: { num: number, pin: Gpio}[];
   private readonly ledDuration: number;
 
   private currentTimeout: ReturnType<typeof setInterval> | null;
@@ -27,7 +27,10 @@ export class LEDManager {
           throw new Error(`LED_PINS contains non numeric element ${el}.`);
         }
         console.info(`Configuring output to GPIO ${parsedEl}`);
-        return new Gpio(parsedEl, 'out');
+        return {
+          num: parsedEl,
+          pin: new Gpio(parsedEl, 'out'),
+        };
       });
     }
 
@@ -56,7 +59,8 @@ export class LEDManager {
   async turnOff() {
     await this.reset();
     for (const led of this.ledPins) {
-      led.unexport();
+      console.debug(`Removing GPIO ${led.num}`);
+      led.pin.unexport();
     }
   }
 
@@ -78,9 +82,9 @@ export class LEDManager {
   }
 
   private async setLeds(state: LEDState) {
-    console.debug(`Setting LEDs states to: ${state === LEDState.ON ? chalk.green('ON') : chalk.red('OFF')}`)
     for (const led of this.ledPins) {
-      led.writeSync(LEDState.ON ? 1 : 0);
+      console.debug(`Setting GPIO ${led.num} to ${state === LEDState.ON ? chalk.green('ON') : chalk.red('OFF')}`);
+      led.pin.writeSync(LEDState.ON ? 1 : 0);
     }
   }
 }
