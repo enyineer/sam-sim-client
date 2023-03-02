@@ -84,6 +84,7 @@ export class SoundPlayer {
 
   static async playStartupSound() {
     const startupPath = path.join(SoundPlayer.assetsPath, "winxp.mp3");
+    Logger.l.debug(`Playing startup sound from ${startupPath}`);
     await this.play(startupPath);
   }
 
