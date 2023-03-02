@@ -37,7 +37,12 @@ export class SoundPlayer {
 
     Logger.l.debug(`Playing Gong ${alarmType} from ${gongPath}`);
 
-    await this.play(gongPath);
+    try {
+      await this.play(gongPath);
+    } catch (err) {
+      Logger.l.error(`Could not play gong ${gongPath}: ${err}`);
+    }
+    
   }
 
   private static getGongPath(alarmType: AlarmType) {
@@ -78,13 +83,21 @@ export class SoundPlayer {
 
   private static async playTtsFile(localPath: string) {
     Logger.l.debug(`Playing tts file ${localPath}`);
-    await this.play(localPath);
+    try {
+      await this.play(localPath);
+    } catch (err) {
+      Logger.l.error(`Could not play tts file ${localPath}: ${err}`);
+    }
   }
 
   static async playStartupSound() {
     const startupPath = path.join(SoundPlayer.assetsPath, "winxp.mp3");
     Logger.l.debug(`Playing startup sound from ${startupPath}`);
-    await this.play(startupPath);
+    try {
+      await this.play(startupPath);
+    } catch (err) {
+      Logger.l.error(`Could not play startup sound ${startupPath}: ${err}`);
+    }
   }
 
   private static async play(path: string) {
