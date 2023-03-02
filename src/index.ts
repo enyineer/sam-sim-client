@@ -72,7 +72,7 @@ const ledManager = new LEDManager();
 let initialSnapshot = true;
 
 const main = async () => {
-  ledManager.startFlashing(3);
+  ledManager.startFlashing(5);
   await SoundPlayer.playStartupSound();
 
   Logger.l.info(

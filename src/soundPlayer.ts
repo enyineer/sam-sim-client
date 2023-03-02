@@ -16,8 +16,8 @@ export class SoundPlayer {
     bucketPath: string,
     bucket: Bucket
   ) {
-    await this.playGong(alarmType);
     const localPath = await this.downloadTtsFile(bucketPath, bucket);
+    await this.playGong(alarmType);
     await this.playTtsFile(localPath);
   }
 
