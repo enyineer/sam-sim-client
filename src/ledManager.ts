@@ -39,7 +39,7 @@ export class LEDManager {
       const parsedEl = parseInt(ledDurationConf);
 
       if (Number.isNaN(parsedEl)) {
-        throw new Error(`LED_DURATION is non numeric ${ledDuration}`);
+        throw new Error(`LED_DURATION is non numeric ${ledDurationConf}`);
       }
 
       this.ledDuration = parsedEl;
