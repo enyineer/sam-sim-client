@@ -72,12 +72,12 @@ const ledManager = new LEDManager();
 let initialSnapshot = true;
 
 const main = async () => {
+  ledManager.startFlashing(3);
+  await SoundPlayer.playStartupSound();
+
   Logger.l.info(
     `Starting listener for new alarms at ${collectionPath} in project ${projectId}`
   );
-
-  ledManager.startFlashing(3);
-  SoundPlayer.playStartupSound();
 
   alarmsFirestore.onSnapshot(async (snapshot) => {
     // Do not react on the initial snapshot event. This contains old alarms

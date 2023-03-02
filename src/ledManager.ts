@@ -1,4 +1,4 @@
-import { Gpio } from "onoff";
+import { Gpio } from "pigpio";
 import chalk from "chalk";
 import { Logger } from './logger';
 
@@ -31,7 +31,7 @@ export class LEDManager {
 
         Logger.l.info(`Adding GPIO ${parsedEl} as output`);
         
-        const pin = new Gpio(parsedEl, 'low');
+        const pin = new Gpio(parsedEl, { mode: Gpio.OUTPUT });
 
         return {
           num: parsedEl,
@@ -55,8 +55,8 @@ export class LEDManager {
 
     this.currentTimeout = null;
 
-    process.once('SIGTERM', () => this.reset());
-    process.once('SIGINT', () => this.reset());
+    process.once('SIGTERM', () => this.shutdown());
+    process.once('SIGINT', () => this.shutdown());
   }
 
   startFlashing(duration = this.ledDuration) {
@@ -77,11 +77,16 @@ export class LEDManager {
     this.setLeds(LEDState.OFF);
   }
 
+  private shutdown() {
+    Logger.l.info('Shutting down LEDs');
+    this.reset();
+  }
+
   private setLeds(state: LEDState) {
     for (const led of this.ledPins) {
       try {
         Logger.l.debug(`Setting new state for GPIO ${led.num}: ${this.getTextForBinary(state)}`);
-        led.pin.writeSync(LEDState.ON ? 1 : 0);
+        led.pin.digitalWrite(LEDState.ON ? 1 : 0);
       } catch (err) {
         Logger.l.error(`Failed setting GPIO ${led.num} to ${this.getTextForBinary(state)}: ${err}`);
       }
