@@ -29,6 +29,11 @@ export class LEDManager {
           throw new Error(`LED_PINS contains non numeric element ${el}.`);
         }
         Logger.l.info(`Configuring output to GPIO ${parsedEl}`);
+        
+        if (!Gpio.accessible(parsedEl)) {
+          throw new Error(`GPIO ${parsedEl} is not accessible`);
+        }
+
         return {
           num: parsedEl,
           pin: new Gpio(parsedEl, 'out'),
