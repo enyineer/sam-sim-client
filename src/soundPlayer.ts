@@ -13,10 +13,8 @@ export class SoundPlayer {
 
   static async playAlarm(
     alarmType: AlarmType,
-    bucketPath: string,
-    bucket: Bucket
+    localPath: string,
   ) {
-    const localPath = await this.downloadTtsFile(bucketPath, bucket);
     await this.playGong(alarmType);
     await this.playTtsFile(localPath);
   }
@@ -41,8 +39,25 @@ export class SoundPlayer {
       await this.play(gongPath);
     } catch (err) {
       Logger.l.error(`Could not play gong ${gongPath}: ${err}`);
+    } 
+  }
+
+  static async downloadTtsFile(bucketPath: string, bucket: Bucket) {
+    const file = bucket.file(bucketPath);
+    const localPath = path.join(SoundPlayer.cachePath, file.name);
+
+    if (!existsSync(localPath)) {
+      Logger.l.debug(
+        `File ${file.name} does not exist. Downloading from Storage`
+      );
+      await mkdir(path.dirname(localPath), { recursive: true });
+      const [mp3] = await file.download();
+      await writeFile(localPath, mp3);
+    } else {
+      Logger.l.debug(`File ${file.name} already existed. Returning cache path`);
     }
-    
+
+    return localPath;
   }
 
   private static getGongPath(alarmType: AlarmType) {
@@ -61,24 +76,6 @@ export class SoundPlayer {
       default:
         throw new Error(`No file mapping for GongType ${alarmType}`);
     }
-  }
-
-  private static async downloadTtsFile(bucketPath: string, bucket: Bucket) {
-    const file = bucket.file(bucketPath);
-    const localPath = path.join(SoundPlayer.cachePath, file.name);
-
-    if (!existsSync(localPath)) {
-      Logger.l.debug(
-        `File ${file.name} does not exist. Downloading from Storage`
-      );
-      await mkdir(path.dirname(localPath), { recursive: true });
-      const [mp3] = await file.download();
-      await writeFile(localPath, mp3);
-    } else {
-      Logger.l.debug(`File ${file.name} already existed. Returning cache path`);
-    }
-
-    return localPath;
   }
 
   private static async playTtsFile(localPath: string) {
