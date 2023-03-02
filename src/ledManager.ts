@@ -86,7 +86,7 @@ export class LEDManager {
     for (const led of this.ledPins) {
       try {
         Logger.l.debug(`Setting new state for GPIO ${led.num}: ${this.getTextForBinary(state)}`);
-        led.pin.digitalWrite(LEDState.ON ? 1 : 0);
+        led.pin.digitalWrite(state);
       } catch (err) {
         Logger.l.error(`Failed setting GPIO ${led.num} to ${this.getTextForBinary(state)}: ${err}`);
       }
