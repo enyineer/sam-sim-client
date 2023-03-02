@@ -5,6 +5,24 @@ import dotenv from "dotenv";
 import { LEDManager } from "./ledManager";
 import { SoundPlayer } from "./soundPlayer";
 
+const semverRegEx = /(\d+)\.(\d+)\.(\d+)/;
+const nodeVersion = process.versions.node;
+const versionMatches = semverRegEx.exec(nodeVersion);
+
+if (versionMatches === null) {
+  throw new Error(`Could not determine NodeJS version`);
+}
+
+const majorVersion = parseInt(versionMatches[1]);
+
+if (Number.isNaN(majorVersion)) {
+  throw new Error(`Detected major version of NodeJS is NaN`);
+}
+
+if (majorVersion < 10 || majorVersion > 16) {
+  throw new Error(`NodeJS v${majorVersion} is not supported. Must be >= 10 and <= 16!`);
+}
+
 dotenv.config();
 
 const projectId = process.env.GOOGLE_PROJECT_ID;
