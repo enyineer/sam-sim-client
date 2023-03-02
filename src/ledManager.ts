@@ -69,28 +69,32 @@ export class LEDManager {
     process.once('SIGINT', () => this.reset());
   }
 
-  async startFlashing(duration = this.ledDuration) {
-    await this.reset();
+  startFlashing(duration = this.ledDuration) {
+    this.reset();
     Logger.l.debug(`Starting LEDs for ${duration} seconds`);
-    await this.setLeds(LEDState.ON);
-    this.currentTimeout = setTimeout(async () => {
+    this.setLeds(LEDState.ON);
+    this.currentTimeout = setTimeout(() => {
       Logger.l.debug(`Flashing for ${duration} seconds finished`);
-      await this.reset();
+      this.reset();
     }, duration * 1000);
   }
 
-  async reset() {
+  reset() {
     Logger.l.debug(`Resetting LEDs`);
     if (this.currentTimeout !== null) {
       clearTimeout(this.currentTimeout);
     }
-    await this.setLeds(LEDState.OFF);
+    this.setLeds(LEDState.OFF);
   }
 
-  private async setLeds(state: LEDState) {
+  private setLeds(state: LEDState) {
     for (const led of this.ledPins) {
-      led.pin.digitalWrite(LEDState.ON ? 1 : 0);
-      Logger.l.debug(`Setting new state for GPIO ${led.num}: ${this.getTextForBinary(state)}`);
+      try {
+        Logger.l.debug(`Setting new state for GPIO ${led.num}: ${this.getTextForBinary(state)}`);
+        led.pin.digitalWrite(LEDState.ON ? 1 : 0);
+      } catch (err) {
+        Logger.l.error(`Failed setting GPIO ${led.num} to ${this.getTextForBinary(state)}: ${err}`);
+      }
     }
   }
 
