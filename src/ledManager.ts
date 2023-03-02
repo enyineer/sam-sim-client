@@ -18,6 +18,10 @@ export class LEDManager {
     const ledPinsConf = process.env.LED_PINS;
     const ledDurationConf = process.env.LED_DURATION;
 
+    if (!Gpio.accessible) {
+      throw new Error(`GPIO is not accessible`);
+    }
+    
     if (ledPinsConf === undefined) {
       this.ledPins = [];
       Logger.l.warn('LED_PINS was not set in .env - LEDs won\'t flash on new alerts.');
@@ -31,10 +35,6 @@ export class LEDManager {
         Logger.l.info(`Configuring output to GPIO ${parsedEl}`);
         
         const pin = new Gpio(parsedEl, 'out');
-
-        if (!pin.accessible) {
-          throw new Error(`GPIO ${parsedEl} is not accessible`);
-        }
 
         return {
           num: parsedEl,
