@@ -1,10 +1,10 @@
-import { Gpio } from "onoff";
+import { Gpio } from "pigpio";
 import chalk from "chalk";
 import { Logger } from './logger';
 
 enum LEDState {
-  ON,
-  OFF,
+  ON = 1,
+  OFF = 0,
 }
 
 export class LEDManager {
@@ -17,24 +17,25 @@ export class LEDManager {
   constructor() {
     const ledPinsConf = process.env.LED_PINS;
     const ledDurationConf = process.env.LED_DURATION;
-
-    if (!Gpio.accessible) {
-      throw new Error(`GPIO is not accessible`);
-    }
     
     if (ledPinsConf === undefined) {
       this.ledPins = [];
-      Logger.l.warn('LED_PINS was not set in .env - LEDs won\'t flash on new alerts.');
+      Logger.l.warn('LED_PINS was not set in .env - LEDs won\'t flash on new alerts');
     } else {
       this.ledPins = ledPinsConf.split(',').map(el => {
         const parsedEl = parseInt(el);
 
         if (Number.isNaN(parsedEl)) {
-          throw new Error(`LED_PINS contains non numeric element ${el}.`);
+          throw new Error(`LED_PINS contains non numeric element ${el}`);
         }
-        Logger.l.info(`Configuring output to GPIO ${parsedEl}`);
+
+        Logger.l.info(`Adding GPIO ${parsedEl} as output`);
         
-        const pin = new Gpio(parsedEl, 'out');
+        const pin = new Gpio(parsedEl, { mode: Gpio.OUTPUT, alert: true });
+
+        pin.on('alert', (value) => {
+          Logger.l.debug(`Received new state for GPIO ${parsedEl}: ${this.getTextForBinary(value)}`);
+        });
 
         return {
           num: parsedEl,
@@ -44,7 +45,7 @@ export class LEDManager {
     }
 
     if (ledDurationConf === undefined) {
-      Logger.l.warn(`LED_DURATION was not set in .env - Setting to default duration of ${this.DEFAULT_LED_DURATION} seconds.`);
+      Logger.l.warn(`LED_DURATION was not set in .env - Setting to default duration of ${this.DEFAULT_LED_DURATION} seconds`);
       this.ledDuration = this.DEFAULT_LED_DURATION;
     } else {
       const parsedEl = parseInt(ledDurationConf);
@@ -60,16 +61,16 @@ export class LEDManager {
 
     this.setLeds(LEDState.OFF);
 
-    process.once('SIGTERM', () => this.shutDown());
-    process.once('SIGINT', () => this.shutDown());
+    process.once('SIGTERM', () => this.reset());
+    process.once('SIGINT', () => this.reset());
   }
 
   async startFlashing(duration = this.ledDuration) {
     await this.reset();
-    Logger.l.debug(`Starting LEDs for ${duration} seconds.`);
+    Logger.l.debug(`Starting LEDs for ${duration} seconds`);
     await this.setLeds(LEDState.ON);
     this.currentTimeout = setTimeout(async () => {
-      Logger.l.debug(`Flashing for ${duration} seconds finished.`);
+      Logger.l.debug(`Flashing for ${duration} seconds finished`);
       await this.reset();
     }, duration * 1000);
   }
@@ -82,19 +83,14 @@ export class LEDManager {
     await this.setLeds(LEDState.OFF);
   }
 
-  private async shutDown() {
-    await this.reset();
+  private async setLeds(state: LEDState) {
     for (const led of this.ledPins) {
-      Logger.l.debug(`Removing GPIO ${led.num}`);
-      led.pin.unexport();
+      led.pin.digitalWrite(LEDState.ON ? 1 : 0);
+      Logger.l.debug(`Setting new state for GPIO ${led.num}: ${this.getTextForBinary(state)}`);
     }
   }
 
-  private async setLeds(state: LEDState) {
-    for (const led of this.ledPins) {
-      led.pin.writeSync(LEDState.ON ? 1 : 0);
-      const newState = led.pin.readSync();
-      Logger.l.debug(`Set GPIO ${led.num} to ${newState === 1 ? chalk.green('ON') : chalk.red('OFF')}`);
-    }
+  private getTextForBinary(binary: 0 | 1) {
+    return binary === 1 ? chalk.green('ON') : chalk.red('OFF');
   }
 }

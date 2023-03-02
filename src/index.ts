@@ -8,7 +8,7 @@ import { LEDManager } from "./ledManager";
 import { SoundPlayer } from "./soundPlayer";
 import { Logger } from './logger';
 
-Logger.l.info(`Starting SAM-SIM Client... Please wait.`);
+Logger.l.info(`Starting SAM-SIM Client... Please wait`);
 
 const semverRegEx = /(\d+)\.(\d+)\.(\d+)/;
 const nodeVersion = process.versions.node;
@@ -36,21 +36,21 @@ const bucketName = process.env.BUCKET_NAME;
 const stationId = process.env.FIRESTORE_STATION_ID;
 
 if (projectId === undefined) {
-  throw new Error(`GOOGLE_PROJECT_ID not set.`);
+  throw new Error(`GOOGLE_PROJECT_ID not set`);
 }
 
 if (saKeyName === undefined) {
-  throw new Error("GOOGLE_SA_NAME not set.");
+  throw new Error("GOOGLE_SA_NAME not set");
 }
 
 const saKeyPath = path.join(__dirname, "..", "serviceAccount", saKeyName);
 
 if (bucketName === undefined) {
-  throw new Error(`BUCKET_NAME not set.`);
+  throw new Error(`BUCKET_NAME not set`);
 }
 
 if (stationId === undefined) {
-  throw new Error(`FIRESTORE_STATION_ID not set.`);
+  throw new Error(`FIRESTORE_STATION_ID not set`);
 }
 
 const firestore = new Firestore({

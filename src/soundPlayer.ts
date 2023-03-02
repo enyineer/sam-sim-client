@@ -1,6 +1,5 @@
 import { AlarmType } from "./AlarmType";
 import path from "path";
-import SoundPlay from "sound-play";
 import { existsSync } from "fs";
 import { mkdir, writeFile } from "fs/promises";
 import { Bucket } from "@google-cloud/storage";
@@ -65,13 +64,13 @@ export class SoundPlayer {
 
     if (!existsSync(localPath)) {
       Logger.l.debug(
-        `File ${file.name} does not exist. Downloading from Storage.`
+        `File ${file.name} does not exist. Downloading from Storage`
       );
       await mkdir(path.dirname(localPath), { recursive: true });
       const [mp3] = await file.download();
       await writeFile(localPath, mp3);
     } else {
-      Logger.l.debug(`File ${file.name} already existed. Returning cache path.`);
+      Logger.l.debug(`File ${file.name} already existed. Returning cache path`);
     }
 
     return localPath;
@@ -99,7 +98,7 @@ export class SoundPlayer {
     const vlcPath = await which(vlcExec, { nothrow: true });
     if (vlcPath === null) {
       throw new Error(
-        "Could not find vlc on device. Please install vlc and if under windows, add it's installation folder to PATH environment variable."
+        "Could not find vlc on device. Please install vlc and if under windows, add it's installation folder to PATH environment variable"
       );
     }
     return new Promise<void>((res, rej) => {
