@@ -40,7 +40,7 @@ export class SoundPlayer {
     try {
       await this.play(gongPath);
     } catch (err) {
-      Logger.l.error(`Could not play gong ${gongPath}: ${JSON.stringify(err)}`);
+      Logger.l.error(`Could not play gong ${gongPath}: ${err}`);
     }
     
   }
@@ -86,7 +86,7 @@ export class SoundPlayer {
     try {
       await this.play(localPath);
     } catch (err) {
-      Logger.l.error(`Could not play tts file ${localPath}: ${JSON.stringify(err)}`);
+      Logger.l.error(`Could not play tts file ${localPath}: ${err}`);
     }
   }
 
@@ -96,7 +96,7 @@ export class SoundPlayer {
     try {
       await this.play(startupPath);
     } catch (err) {
-      Logger.l.error(`Could not play startup sound ${startupPath}: ${JSON.stringify(err)}`);
+      Logger.l.error(`Could not play startup sound ${startupPath}: ${err}`);
     }
   }
 
@@ -114,14 +114,29 @@ export class SoundPlayer {
         "Could not find vlc on device. Please install vlc and if under windows, add it's installation folder to PATH environment variable"
       );
     }
-    return new Promise<void>((res, rej) => {
+    return new Promise<string>((res, rej) => {
       const vlcProcess = exec(`${vlcPath} -Idummy ${path} vlc://quit`);
+
+      let vlcStdOut = "";
+      let vlcStdErr = "";
+
+      if (vlcProcess.stdout) {
+        vlcProcess.stdout.on('data', (chunk) => {
+          vlcStdOut = vlcStdOut + `${chunk}\n`;
+        });
+      }
+
+      if (vlcProcess.stderr) {
+        vlcProcess.stderr.on('data', (chunk) => {
+          vlcStdErr = vlcStdErr + `${chunk}\n`;
+        });
+      }
 
       vlcProcess.on("exit", (code) => {
         if (code === 0) {
-          res();
+          res(vlcStdOut);
         } else {
-          rej(vlcProcess.stderr);
+          rej(vlcStdErr);
         }
       });
     });
