@@ -2,3 +2,4 @@ node_modules/
 serviceAccount/
 .env
 cache/
+dist/
