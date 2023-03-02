@@ -1,9 +1,14 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import path from "path";
 import { Firestore } from "@google-cloud/firestore";
 import { Storage } from "@google-cloud/storage";
-import dotenv from "dotenv";
 import { LEDManager } from "./ledManager";
 import { SoundPlayer } from "./soundPlayer";
+import { Logger } from './logger';
+
+Logger.l.info(`Starting SAM-SIM Client... Please wait.`);
 
 const semverRegEx = /(\d+)\.(\d+)\.(\d+)/;
 const nodeVersion = process.versions.node;
@@ -24,8 +29,6 @@ const supportedVersions = [10, 12, 14, 15, 16];
 if (!supportedVersions.includes(majorVersion)) {
   throw new Error(`NodeJS v${majorVersion} is not supported. Must be one of: ${supportedVersions.join(', ')}`);
 }
-
-dotenv.config();
 
 const projectId = process.env.GOOGLE_PROJECT_ID;
 const saKeyName = process.env.GOOGLE_SA_NAME;
@@ -69,10 +72,11 @@ const ledManager = new LEDManager();
 let initialSnapshot = true;
 
 const main = async () => {
-  console.info(
-    `Starting snapshot listener for collection ${collectionPath} in project ${projectId}`
+  Logger.l.info(
+    `Starting listener for new alarms at ${collectionPath} in project ${projectId}`
   );
 
+  ledManager.startFlashing(3);
   SoundPlayer.playStartupSound();
 
   alarmsFirestore.onSnapshot(async (snapshot) => {
@@ -103,4 +107,4 @@ const main = async () => {
   });
 };
 
-main().catch((err) => console.error(err));
+main().catch((err) => Logger.l.error(err));

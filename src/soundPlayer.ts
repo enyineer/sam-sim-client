@@ -6,6 +6,7 @@ import { mkdir, writeFile } from "fs/promises";
 import { Bucket } from "@google-cloud/storage";
 import which from "which";
 import { exec } from "child_process";
+import { Logger } from './logger';
 
 export class SoundPlayer {
   static readonly cachePath = path.join(__dirname, "..", "cache");
@@ -25,7 +26,7 @@ export class SoundPlayer {
     let gongPath = this.getGongPath(alarmType);
 
     if (gongPath === null) {
-      console.debug(
+      Logger.l.debug(
         `Not playing gong because gongPath for gong ${alarmType} is null`
       );
       return;
@@ -35,7 +36,7 @@ export class SoundPlayer {
       throw new Error(`Could not find Gong ${alarmType} at path ${gongPath}`);
     }
 
-    console.debug(`Playing Gong ${alarmType} from ${gongPath}`);
+    Logger.l.debug(`Playing Gong ${alarmType} from ${gongPath}`);
 
     await this.play(gongPath);
   }
@@ -63,21 +64,21 @@ export class SoundPlayer {
     const localPath = path.join(SoundPlayer.cachePath, file.name);
 
     if (!existsSync(localPath)) {
-      console.debug(
+      Logger.l.debug(
         `File ${file.name} does not exist. Downloading from Storage.`
       );
       await mkdir(path.dirname(localPath), { recursive: true });
       const [mp3] = await file.download();
       await writeFile(localPath, mp3);
     } else {
-      console.debug(`File ${file.name} already existed. Returning cache path.`);
+      Logger.l.debug(`File ${file.name} already existed. Returning cache path.`);
     }
 
     return localPath;
   }
 
   private static async playTtsFile(localPath: string) {
-    console.debug(`Playing tts file ${localPath}`);
+    Logger.l.debug(`Playing tts file ${localPath}`);
     await this.play(localPath);
   }
 
