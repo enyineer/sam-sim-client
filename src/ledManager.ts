@@ -85,8 +85,9 @@ export class LEDManager {
 
   private async setLeds(state: LEDState) {
     for (const led of this.ledPins) {
-      Logger.l.debug(`Setting GPIO ${led.num} to ${state === LEDState.ON ? chalk.green('ON') : chalk.red('OFF')}`);
       led.pin.writeSync(LEDState.ON ? 1 : 0);
+      const newState = led.pin.readSync();
+      Logger.l.debug(`Set GPIO ${led.num} to ${newState === 1 ? chalk.green('ON') : chalk.red('OFF')}`);
     }
   }
 }
