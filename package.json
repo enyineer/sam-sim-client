@@ -4,7 +4,8 @@
   "scripts": {
     "setup": "sudo apt-get install vlc pigpio",
     "build": "rimraf dist && tsc && copyfiles -u 1 src/assets/*.* dist/ && copyfiles .env dist/",
-    "start": "npm run build && sudo node dist/index.js",
+    "update": "git pull && npm run build",
+    "start": "sudo node dist/index.js",
     "dev": "ts-node-dev src/index.ts"
   },
   "dependencies": {
