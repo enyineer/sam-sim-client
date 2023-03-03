@@ -74,13 +74,11 @@ export class SoundPlayer {
 
     if (!existsSync(ttsPath)) {
       Logger.l.debug(
-        `File ${file.name} does not exist. Downloading from Storage`
+        `Downloading ${file.name} from Storage`
       );
       await mkdir(path.dirname(ttsPath), { recursive: true });
       const [mp3] = await file.download();
       await writeFile(ttsPath, mp3);
-    } else {
-      Logger.l.debug(`File ${file.name} already existed. Returning cache path`);
     }
 
     return ttsPath;
@@ -88,7 +86,6 @@ export class SoundPlayer {
 
   static async playStartupSound() {
     const startupPath = path.join(SoundPlayer.assetsPath, "winxp.mp3");
-    Logger.l.debug(`Playing startup sound from ${startupPath}`);
     try {
       await this.play([startupPath]);
     } catch (err) {
@@ -110,6 +107,8 @@ export class SoundPlayer {
         "Could not find vlc on device. Please install vlc and if under windows, add it's installation folder to PATH environment variable"
       );
     }
+
+    Logger.l.debug(`Playing files ${files.join(', ')} with ${vlcPath}`);
 
     return new Promise<string>((res, rej) => {
       const vlcProcess = exec(`${vlcPath} -Idummy ${files.join(' ')} vlc://quit`);
