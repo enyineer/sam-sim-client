@@ -63,8 +63,10 @@ const storage = new Storage({
   keyFilename: saKeyPath,
 });
 
+const stationPath = `stations/${stationId}`;
 const collectionPath = `stations/${stationId}/alarms`;
-const alarmsFirestore = firestore.collection(collectionPath);
+const stationDocument = firestore.doc(stationPath);
+const alarmsCollection = firestore.collection(collectionPath);
 const alarmsStorage = storage.bucket(bucketName);
 
 const ledManager = new LEDManager();
@@ -75,11 +77,17 @@ const main = async () => {
   ledManager.startFlashing(5);
   await SoundPlayer.playStartupSound();
 
+  const stationData = (await stationDocument.get()).data();
+
+  if (stationData === undefined) {
+    throw new Error(`Station at ${stationPath} returned undefined data`);
+  }
+
   Logger.l.info(
-    `Starting listener for new alarms at ${collectionPath} in project ${projectId}`
+    `Starting listener for new alarms at station "${stationData.name}" in Firebase project "${projectId}"`
   );
 
-  alarmsFirestore.onSnapshot(async (snapshot) => {
+  alarmsCollection.onSnapshot(async (snapshot) => {
     // Do not react on the initial snapshot event. This contains old alarms
     if (initialSnapshot) {
       initialSnapshot = false;
