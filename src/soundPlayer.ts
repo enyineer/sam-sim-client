@@ -13,91 +13,90 @@ export class SoundPlayer {
 
   static async playAlarm(
     alarmType: AlarmType,
-    localPath: string,
+    bucketPath: string,
+    bucket: Bucket,
   ) {
-    await this.playGong(alarmType);
-    await this.playTtsFile(localPath);
+    const paths: string[] = [];
+    const gongPath = await this.getGongPath(alarmType);
+
+    if (gongPath !== null) {
+      paths.push(gongPath);
+    }
+
+    // May be undefined if not tts text was added to alarm
+    if (bucketPath) {
+      paths.push(await this.getTtsPath(bucketPath, bucket));
+    }
+
+    this.play(paths);
   }
 
-  static async playGong(alarmType: AlarmType) {
-    let gongPath = this.getGongPath(alarmType);
+  static async getGongPath(alarmType: AlarmType) {
+    let gongPath: string | null;
+
+    switch (alarmType) {
+      case AlarmType.EINZELFAHRZEUGALARM:
+        gongPath = path.join(
+          SoundPlayer.assetsPath,
+          "einzelfahrzeug-alarm_mit_gong.wav"
+        );
+        break;
+      case AlarmType.VORALARM:
+        gongPath = path.join(SoundPlayer.assetsPath, "vor-alarm_mit_gong.wav");
+        break;
+      case AlarmType.ZUGALARM:
+        gongPath = path.join(SoundPlayer.assetsPath, "zug-alarm_mit_gong.wav");
+        break;
+      case AlarmType.KEINER:
+        gongPath = null;
+        break;
+      default:
+        throw new Error(`No file mapping for GongType ${alarmType}`);
+    }
 
     if (gongPath === null) {
       Logger.l.debug(
         `Not playing gong because gongPath for gong ${alarmType} is null`
       );
-      return;
+      return gongPath;
     }
 
     if (!existsSync(gongPath)) {
       throw new Error(`Could not find Gong ${alarmType} at path ${gongPath}`);
     }
 
-    Logger.l.debug(`Playing Gong ${alarmType} from ${gongPath}`);
-
-    try {
-      await this.play(gongPath);
-    } catch (err) {
-      Logger.l.error(`Could not play gong ${gongPath}: ${err}`);
-    } 
+    return gongPath;
   }
 
-  static async downloadTtsFile(bucketPath: string, bucket: Bucket) {
+  static async getTtsPath(bucketPath: string, bucket: Bucket) {
     const file = bucket.file(bucketPath);
-    const localPath = path.join(SoundPlayer.cachePath, file.name);
+    const ttsPath = path.join(SoundPlayer.cachePath, file.name);
 
-    if (!existsSync(localPath)) {
+    if (!existsSync(ttsPath)) {
       Logger.l.debug(
         `File ${file.name} does not exist. Downloading from Storage`
       );
-      await mkdir(path.dirname(localPath), { recursive: true });
+      await mkdir(path.dirname(ttsPath), { recursive: true });
       const [mp3] = await file.download();
-      await writeFile(localPath, mp3);
+      await writeFile(ttsPath, mp3);
     } else {
       Logger.l.debug(`File ${file.name} already existed. Returning cache path`);
     }
 
-    return localPath;
-  }
-
-  private static getGongPath(alarmType: AlarmType) {
-    switch (alarmType) {
-      case AlarmType.EINZELFAHRZEUGALARM:
-        return path.join(
-          SoundPlayer.assetsPath,
-          "einzelfahrzeug-alarm_mit_gong.wav"
-        );
-      case AlarmType.VORALARM:
-        return path.join(SoundPlayer.assetsPath, "vor-alarm_mit_gong.wav");
-      case AlarmType.ZUGALARM:
-        return path.join(SoundPlayer.assetsPath, "zug-alarm_mit_gong.wav");
-      case AlarmType.KEINER:
-        return null;
-      default:
-        throw new Error(`No file mapping for GongType ${alarmType}`);
-    }
-  }
-
-  private static async playTtsFile(localPath: string) {
-    Logger.l.debug(`Playing tts file ${localPath}`);
-    try {
-      await this.play(localPath);
-    } catch (err) {
-      Logger.l.error(`Could not play tts file ${localPath}: ${err}`);
-    }
+    return ttsPath;
   }
 
   static async playStartupSound() {
     const startupPath = path.join(SoundPlayer.assetsPath, "winxp.mp3");
     Logger.l.debug(`Playing startup sound from ${startupPath}`);
     try {
-      await this.play(startupPath);
+      await this.play([startupPath]);
     } catch (err) {
       Logger.l.error(`Could not play startup sound ${startupPath}: ${err}`);
     }
   }
 
-  private static async play(path: string) {
+  private static async play(files: string[]) {
     let vlcExec;
     if (process.platform === "win32") {
       vlcExec = "vlc.exe";
@@ -111,8 +110,9 @@ export class SoundPlayer {
         "Could not find vlc on device. Please install vlc and if under windows, add it's installation folder to PATH environment variable"
       );
     }
+
     return new Promise<string>((res, rej) => {
-      const vlcProcess = exec(`${vlcPath} -Idummy ${path} vlc://quit`);
+      const vlcProcess = exec(`${vlcPath} -Idummy ${files.join(' ')} vlc://quit`);
 
       let vlcStdOut = "";
       let vlcStdErr = "";
