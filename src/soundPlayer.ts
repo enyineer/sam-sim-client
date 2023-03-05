@@ -34,7 +34,7 @@ export class SoundPlayer {
       paths.push(await this.getTtsPath(bucketPath, bucket));
     }
 
-    this.play(paths);
+    await this.play(paths);
   }
 
   static async getGongPath(alarmType: AlarmType) {
@@ -95,7 +95,7 @@ export class SoundPlayer {
     try {
       await this.play([startupPath]);
     } catch (err) {
-      Logger.l.error(`Could not play startup sound ${startupPath}: ${err}`);
+      Logger.l.error(`Could not play startup sound ${startupPath}`);
     }
   }
 
@@ -123,35 +123,26 @@ export class SoundPlayer {
 
     Logger.l.debug(`Running: ${command}`);
 
-    return new Promise<string>((res, rej) => {
+    return new Promise<void>((res, rej) => {
       const vlcProcess = exec(command);
-
-      let vlcStdOut = "";
-      let vlcStdErr = "";
 
       if (vlcProcess.stdout) {
         vlcProcess.stdout.on('data', (chunk) => {
-          vlcStdOut = vlcStdOut + `${chunk}\n`;
+          Logger.l.debug(`[VLC STDOUT]: ${chunk}`);
         });
       }
 
       if (vlcProcess.stderr) {
         vlcProcess.stderr.on('data', (chunk) => {
-          vlcStdErr = vlcStdErr + `${chunk}\n`;
+          Logger.l.error(`[VLC STDERR]: ${chunk}`);
         });
       }
 
       vlcProcess.on("exit", (code) => {
-        if (vlcStdOut !== "") {
-          Logger.l.debug(`VLC stdOut: ${vlcStdOut}`);
-        }
-        if (vlcStdErr !== "") {
-          Logger.l.debug(`VLC stdErr: ${vlcStdErr}`);
-        }
         if (code === 0) {
-          res(vlcStdOut);
+          res();
         } else {
-          rej(vlcStdErr);
+          rej();
         }
       });
     });
