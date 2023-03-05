@@ -109,7 +109,7 @@ export class SoundPlayer {
     }
 
 
-    const command = `${vlcPath} ${files.join(' ')} vlc://quit`;
+    const command = `${vlcPath} -I dummy ${files.join(' ')} vlc://quit`;
     Logger.l.debug(`Running: ${command}`);
 
     return new Promise<string>((res, rej) => {
