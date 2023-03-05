@@ -131,11 +131,15 @@ export class SoundPlayer {
       }
 
       vlcProcess.on("exit", (code) => {
+        if (vlcStdOut !== "") {
+          Logger.l.debug(`VLC stdOut: ${vlcStdOut}`);
+        }
+        if (vlcStdErr !== "") {
+          Logger.l.debug(`VLC stdErr: ${vlcStdErr}`);
+        }
         if (code === 0) {
-          Logger.l.debug(vlcStdOut);
           res(vlcStdOut);
         } else {
-          Logger.l.debug(vlcStdErr);
           rej(vlcStdErr);
         }
       });
