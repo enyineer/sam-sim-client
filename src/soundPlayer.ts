@@ -6,6 +6,7 @@ import { Bucket } from "@google-cloud/storage";
 import which from "which";
 import { exec } from "child_process";
 import { Logger } from './logger';
+import chalk from 'chalk';
 
 const piUser = process.env.PI_USER;
 
@@ -128,13 +129,13 @@ export class SoundPlayer {
 
       if (vlcProcess.stdout) {
         vlcProcess.stdout.on('data', (chunk) => {
-          Logger.l.debug(`[VLC STDOUT]: ${chunk}`);
+          Logger.l.debug(`[${chalk.green('VLC STDOUT')}]: ${chunk}`);
         });
       }
 
       if (vlcProcess.stderr) {
         vlcProcess.stderr.on('data', (chunk) => {
-          Logger.l.error(`[VLC STDERR]: ${chunk}`);
+          Logger.l.debug(`[${chalk.red('VLC STDERR')}]: ${chunk}`);
         });
       }
 
