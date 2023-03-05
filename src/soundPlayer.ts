@@ -108,10 +108,12 @@ export class SoundPlayer {
       );
     }
 
-    Logger.l.debug(`Playing files ${files.join(', ')} with ${vlcPath}`);
+
+    const command = `${vlcPath} ${files.join(' ')} vlc://quit`;
+    Logger.l.debug(`Running: ${command}`);
 
     return new Promise<string>((res, rej) => {
-      const vlcProcess = exec(`${vlcPath} -Idummy ${files.join(' ')} vlc://quit`);
+      const vlcProcess = exec(command);
 
       let vlcStdOut = "";
       let vlcStdErr = "";
@@ -130,8 +132,10 @@ export class SoundPlayer {
 
       vlcProcess.on("exit", (code) => {
         if (code === 0) {
+          Logger.l.debug(vlcStdOut);
           res(vlcStdOut);
         } else {
+          Logger.l.debug(vlcStdErr);
           rej(vlcStdErr);
         }
       });
