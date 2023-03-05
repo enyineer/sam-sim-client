@@ -7,6 +7,12 @@ import which from "which";
 import { exec } from "child_process";
 import { Logger } from './logger';
 
+const piUser = process.env.PI_USER;
+
+if (piUser === undefined) {
+  throw new Error(`PI_USER is not defined in .env`);
+}
+
 export class SoundPlayer {
   static readonly cachePath = path.join(__dirname, "..", "cache");
   static readonly assetsPath = path.join(__dirname, "assets");
@@ -98,7 +104,7 @@ export class SoundPlayer {
     if (process.platform === "win32") {
       vlcExec = "vlc.exe";
     } else {
-      vlcExec = "vlc-wrapper";
+      vlcExec = "cvlc";
     }
 
     const vlcPath = await which(vlcExec, { nothrow: true });
@@ -108,8 +114,13 @@ export class SoundPlayer {
       );
     }
 
+    let command = `${vlcPath} ${files.join(' ')} vlc://quit`;
 
-    const command = `${vlcPath} -I dummy ${files.join(' ')} vlc://quit`;
+    // If run on linux, make sure that we prepend the command with runuser to make sure vlc is run without sudo privileges
+    if (process.platform !== "win32") {
+      command = `runuser -l ${piUser} -c "${command}"`;
+    }
+
     Logger.l.debug(`Running: ${command}`);
 
     return new Promise<string>((res, rej) => {
