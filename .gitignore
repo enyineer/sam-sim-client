@@ -3,3 +3,4 @@ serviceAccount/
 .env
 cache/
 dist/
+*.log

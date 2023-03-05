@@ -10,15 +10,25 @@ export class Logger {
       this._logger = winston.createLogger({
         level: level || 'info',
         transports: [
-          new winston.transports.Console(),
+          new winston.transports.Console({
+            format: winston.format.combine(
+              winston.format.colorize(),
+              winston.format.timestamp(),
+              winston.format.printf(({ timestamp, level, message }) => {
+                return `[${timestamp}] ${level}: ${message}`;
+              })
+            ),
+          }),
+          new winston.transports.File({
+            filename: 'sam-client.log',
+            format: winston.format.combine(
+              winston.format.timestamp(),
+              winston.format.printf(({ timestamp, level, message }) => {
+                return `[${timestamp}] ${level}: ${message}`;
+              })
+            ),
+          }),
         ],
-        format: winston.format.combine(
-          winston.format.colorize(),
-          winston.format.timestamp(),
-          winston.format.printf(({ timestamp, level, message }) => {
-            return `[${timestamp}] ${level}: ${message}`;
-          })
-        ),
       });
     }
 
